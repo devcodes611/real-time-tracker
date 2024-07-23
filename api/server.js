@@ -2,11 +2,11 @@ const express = require('express');
 const http = require('http');
 const socketio = require('socket.io');
 const path = require('path');
+
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
-// Set view engine and static files
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -27,11 +27,14 @@ app.get('/', (req, res) => {
     res.render('index');
 });
 
-// Export the express app as a Vercel serverless function
+// Vercel specific serverless function handler
 module.exports = (req, res) => {
     return new Promise((resolve, reject) => {
-        server.once('listening', () => resolve());
-        server.once('error', (err) => reject(err));
-        server.listen(5000, () => console.log('Server listening on port 5000'));
+        server.listen(5000, () => {
+            console.log('Server listening on port 5000');
+            resolve();
+        }).on('error', (err) => {
+            reject(err);
+        });
     });
 };
