@@ -53,7 +53,7 @@ socket.on('received-location', (data) => {
             permanent: false,
             direction: 'top',
             className: 'user-id-tooltip',
-            opacity: 0
+            opacity: 0 // Hidden by default
         });
 
         marker.on('click', function() {

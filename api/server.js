@@ -1,13 +1,13 @@
 const express = require('express');
+const http = require('http');
 const socketio = require('socket.io');
 const path = require('path');
-const { createServer } = require('http');
-
 const app = express();
-const server = createServer(app);
+const server = http.createServer(app);
 const io = socketio(server);
 
-// Serve static files from 'public' directory
+// Set view engine and static files
+app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, '../public')));
 
 io.on('connection', (socket) => {
@@ -27,12 +27,11 @@ app.get('/', (req, res) => {
     res.render('index');
 });
 
-// Export serverless function
+// Export the express app as a Vercel serverless function
 module.exports = (req, res) => {
-    // Handle requests using Express app
     return new Promise((resolve, reject) => {
-        server.emit('request', req, res);
-        res.on('finish', resolve);
-        res.on('error', reject);
+        server.once('listening', () => resolve());
+        server.once('error', (err) => reject(err));
+        server.listen(5000, () => console.log('Server listening on port 5000'));
     });
 };
