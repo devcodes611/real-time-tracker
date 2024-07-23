@@ -1,13 +1,14 @@
 const express = require('express');
-const app = express();
-const http = require('http');
-const path = require('path');
 const socketio = require('socket.io');
-const server = http.createServer(app);
+const path = require('path');
+const { createServer } = require('http');
+
+const app = express();
+const server = createServer(app);
 const io = socketio(server);
 
-app.set('view engine', 'ejs');
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from 'public' directory
+app.use(express.static(path.join(__dirname, '../public')));
 
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
@@ -26,6 +27,12 @@ app.get('/', (req, res) => {
     res.render('index');
 });
 
-server.listen(5000, () => {
-    console.log('App running at http://localhost:5000');
-});
+// Export serverless function
+module.exports = (req, res) => {
+    // Handle requests using Express app
+    return new Promise((resolve, reject) => {
+        server.emit('request', req, res);
+        res.on('finish', resolve);
+        res.on('error', reject);
+    });
+};

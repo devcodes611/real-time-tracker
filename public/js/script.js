@@ -1,11 +1,11 @@
-const socket = io();
+const socket = io('https://real-time-tracker-five.vercel.app');
 
 if (navigator.geolocation) {
     navigator.geolocation.watchPosition((position) => {
         const { latitude, longitude } = position.coords;
         socket.emit('send-location', { latitude, longitude });
     }, (error) => {
-        console.log(error);
+        console.log('Geolocation error:', error);
     }, {
         enableHighAccuracy: true,
         maximumAge: 0,
@@ -29,7 +29,7 @@ function getColor(id) {
 }
 
 socket.on('received-location', (data) => {
-    console.log(data); // Log received data for debugging
+    console.log('Received location:', data); // Log received data for debugging
     const { id, latitude, longitude } = data;
 
     if (Object.keys(markers).length === 0) {
@@ -52,7 +52,8 @@ socket.on('received-location', (data) => {
         marker.bindTooltip(id, {
             permanent: false,
             direction: 'top',
-            className: 'user-id-tooltip'
+            className: 'user-id-tooltip',
+            opacity: 0
         });
 
         marker.on('click', function() {
@@ -75,17 +76,5 @@ socket.on('user-disconnected', (id) => {
     if (markers[id]) {
         map.removeLayer(markers[id]);
         delete markers[id];
-    }
-});
-
-// Handle search functionality
-document.getElementById('search-button').addEventListener('click', () => {
-    const userId = document.getElementById('user-id-input').value;
-
-    if (markers[userId]) {
-        const { lat, lng } = markers[userId].getLatLng();
-        map.setView([lat, lng], 15);
-    } else {
-        console.log('User ID not found');
     }
 });
